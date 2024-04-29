@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/style.css" />
+    <title>Cadastro de Livros</title>
+</head>
+
+<body>
+    <div class="titulo">
+        <h1>
+            Cadastro de Livros
+        </h1>
+    </div>
+    <hr>
+
+    <div>
+        <form id="meuFormulario">
+
+            <label for="nome">Nome:</label>
+            <input type="text" id="nome" name="nome" required>
+
+            <label for="paginas">Paginas:</label>
+            <input type="text" id="paginas" name="paginas" required>
+
+            <label for="autor">Autor:</label>
+            <input type="text" id="autor" name="autor" required>
+            <br>
+
+            <button type="submit" id="enviarBtn">Enviar</button>
+
+        </form>
+    </div>
+    <hr>
+
+    <div class="titulo2">
+        <h1>
+            Livros
+        </h1>
+    </div>
+
+    <div class="tabelaEstilo">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Páginas</th>
+                    <th>Autor</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="livros">
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        let livros = [];
+
+        function validarFormulario() {
+            let nome = document.getElementById("nome").value;
+            let paginas = document.getElementById("paginas").value;
+            let autor = document.getElementById("autor").value;
+
+            if (nome.trim() === "" || paginas.trim() === "" || autor.trim() === "") {
+                alert("Por favor, preencha todos os campos.");
+                return false;
+            } else {
+                return true;
+            }
+        }
+
+        function registrar() {
+            let nome = document.getElementById("nome").value;
+            let paginas = document.getElementById("paginas").value;
+            let autor = document.getElementById("autor").value;
+
+            let novoLivro = {
+                nome: nome,
+                paginas: paginas,
+                autor: autor
+            };
+
+            if (editandoLivroIndex !== null) {
+                livros[editandoLivroIndex] = novoLivro;
+                editandoLivroIndex = null;
+            } else {
+                livros.push(novoLivro);
+            }
+
+            salvarLivrosNoLocalStorage();
+            mostrarLivros();
+
+            document.getElementById("nome").value = "";
+            document.getElementById("paginas").value = "";
+            document.getElementById("autor").value = "";
+            document.getElementById("enviarBtn").innerText = "Enviar";
+        }
+
+        function mostrarLivros() {
+            let livrosTbody = document.getElementById("livros");
+            livrosTbody.innerHTML = "";
+
+            livros.forEach(function (livro, index) {
+                let tr = document.createElement("tr");
+
+                let nomeTd = document.createElement("td");
+                nomeTd.textContent = livro.nome;
+
+                let paginasTd = document.createElement("td");
+                paginasTd.textContent = livro.paginas;
+
+                let autorTd = document.createElement("td");
+                autorTd.textContent = livro.autor;
+
+                let acoesTd = document.createElement("td");
+                let deletarBotao = document.createElement("button");
+                deletarBotao.textContent = "Deletar";
+                deletarBotao.addEventListener("click", function () {
+                    deletarLivro(index);
+                });
+
+                let editarBotao = document.createElement("button");
+                editarBotao.textContent = "Editar";
+                editarBotao.addEventListener("click", function () {
+                    editarLivro(index);
+                });
+
+                acoesTd.appendChild(deletarBotao);
+                acoesTd.appendChild(editarBotao);
+
+                tr.appendChild(nomeTd);
+                tr.appendChild(paginasTd);
+                tr.appendChild(autorTd);
+                tr.appendChild(acoesTd);
+
+                livrosTbody.appendChild(tr);
+            });
+        }
+
+        function deletarLivro(index) {
+            livros.splice(index, 1);
+            salvarLivrosNoLocalStorage();
+            mostrarLivros();
+        }
+
+        let editandoLivroIndex = null;
+
+        function editarLivro(index) {
+            let livro = livros[index];
+            document.getElementById("nome").value = livro.nome;
+            document.getElementById("paginas").value = livro.paginas;
+            document.getElementById("autor").value = livro.autor;
+            editandoLivroIndex = index;
+            document.getElementById("enviarBtn").innerText = "Atualizar";
+        }
+
+        function salvarLivrosNoLocalStorage() {
+            localStorage.setItem("livros", JSON.stringify(livros));
+        }
+
+        function recuperarLivrosDoLocalStorage() {
+            let livrosSalvos = localStorage.getItem("livros");
+            if (livrosSalvos) {
+                livros = JSON.parse(livrosSalvos);
+                mostrarLivros();
+            }
+        }
+
+        document.getElementById("meuFormulario").addEventListener("submit", function (event) {
+            event.preventDefault();
+            if (validarFormulario()) {
+                registrar();
+            }
+        });
+
+        recuperarLivrosDoLocalStorage();
+    </script>
+</body>
+
+</html>
